@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  email    String   @unique
+  password String
+  isAdmin  Boolean? @default(false) @map("is_admin")
+
+  //connections
+  favoriteMovies Movie[]
+  favoriteActors Actor[]
+  favoriteGenres Genre[]
+  movieRating    Assess[]
+}
+
+model Genre {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name        String @unique @default("")
+  slug        String @unique @default("")
+  description String @default("")
+  icon        String @default("")
+
+  //connections
+  movie Movie[]
+  user  User[] //users who added to favorites
+}
+
+model Actor {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name  String @default("")
+  slug  String @unique @default("")
+  photo String @default("")
+
+  //connections
+  movie Movie[]
+  user  User[] //users who added to favorites
+}
+
+model Movie {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  poster         String   @default("")
+  bigPoster      String   @default("") @map("big_poster")
+  title          String   @default("")
+  description    String   @default("")
+  slug           String   @unique @default("")
+  videoUrl       String   @default("") @map("video_url")
+  isSendTelegram Boolean? @default(false) @map("is_send_telegram")
+  countOpened    Int      @default(0) @map("count_opened")
+  rating         Float    @default(0)
+
+  //movie props
+  year     Int    @default(0)
+  duration Int    @default(0)
+  country  String @default("")
+
+  //connections
+  genres   Genre[]
+  actors   Actor[]
+  user     User[] //users who added to favorites
+  assesses Assess[]
+}
+
+model Assess {
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  rating  Float  @default(0)
+  comment String @default("")
+
+  //connections
+  user    User  @relation(fields: [userId], references: [id])
+  userId  Int
+  movie   Movie @relation(fields: [movieId], references: [id])
+  movieId Int
+
+  @@id([userId, movieId])
+}
